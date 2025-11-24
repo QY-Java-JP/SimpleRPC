@@ -62,6 +62,19 @@ public class RemoteClassFinder {
                 }
             });
 
+    static {
+        // 注册通道关闭事件
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            for (Channel channel : classChannelMap.values()) {
+                try {
+                    channel.close().await(3000);
+                } catch (InterruptedException e) {
+                    log.error("channel关闭异常");
+                }
+            }
+        }));
+    }
+
     // 生成一个可以调用远程方法的接口实现类
     public static <T> T create(Class<T> clazz) throws InterruptedException, ClassNotFoundException {
         // 需要是接口

@@ -11,6 +11,7 @@ import qy.constant.NetErrorCode;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 public class MethodInvokerHandle extends SimpleChannelInboundHandler<DataEntry> {
@@ -22,6 +23,17 @@ public class MethodInvokerHandle extends SimpleChannelInboundHandler<DataEntry> 
 
     public MethodInvokerHandle(Map<String, Object> router) {
         this.router = router;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 监听连接断开
+        ctx.channel().closeFuture().addListener(cf -> {
+            InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
+            log.info("地址:{}:{} 关闭了连接", addr.getHostName(), addr.getPort());
+        });
+
+        super.channelActive(ctx);
     }
 
     @Override
